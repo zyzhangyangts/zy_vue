@@ -1,1 +1,3 @@
 window.MAX_SUCCESS_CODE = 9998
+
+window.SUCCESS_STATUS = 200

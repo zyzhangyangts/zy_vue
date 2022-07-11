@@ -35,8 +35,8 @@ class Merchant {
   async getMerchantList() {
     return _axios({
       method: 'get',
-      url: 'v1/merchant/list',
-      handleError: true,
+      url: 'v1/merchant/lists',
+      Merchant: true,
     })
   }
 }

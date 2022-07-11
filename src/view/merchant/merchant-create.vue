@@ -5,24 +5,54 @@
       <el-row>
         <el-col :lg="16" :md="20" :sm="24" :xs="24">
           <el-form :model="form" status-icon ref="form" label-width="100px" @submit.native.prevent>
-            <el-form-item label="书名" prop="title">
-              <el-input size="medium" v-model="form.title" placeholder="请填写书名"></el-input>
+            <el-form-item label="商圈" prop="title">
+              <el-select
+                v-model="form.market_id"
+                label="请填写商圈"
+                filterable
+                placeholder="请填写商圈"
+                clearable
+              >
+                <el-option
+                  v-for="item in marketList"
+                  :key="item.id"
+                  :label="item.market_name"
+                  :value="item.id"
+                ></el-option>
+              </el-select>
             </el-form-item>
-            <el-form-item label="作者" prop="author">
-              <el-input size="medium" v-model="form.author" placeholder="请填写作者"></el-input>
+            <el-form-item label="商户名称" prop="author">
+              <el-input size="medium" v-model="form.merchant_name" placeholder="请填写商户名称"></el-input>
             </el-form-item>
             <el-form-item label="封面" prop="image">
-              <el-input size="medium" v-model="form.image" placeholder="请填写封面地址"></el-input>
+              <el-upload
+                class="upload-demo"
+                action="http://api.admin.zy.com/cms/file"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :on-success="handleAvatarSuccess"
+                :file-list="fileList"
+                list-type="picture">
+                <el-button size="small" type="primary">点击上传</el-button>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+              </el-upload>
             </el-form-item>
-            <el-form-item label="简介" prop="summary">
-              <el-input
-                size="medium"
-                type="textarea"
-                :autosize="{ minRows: 4, maxRows: 8 }"
-                placeholder="请输入简介"
-                v-model="form.summary"
-              >
-              </el-input>
+
+            <el-form-item label="普通示例">
+              <upload-imgs ref="upload_photo" :rules="file_rules" :max-num="1" :multiple="false" />
+              <div><el-button @click="getValue('upload_photo')">获取当前图像数据</el-button></div>
+            </el-form-item>
+
+            <el-form-item label="商户评分" prop="image">
+              <el-input size="medium" v-model="form.merchant_score" placeholder="请填写商户评分"></el-input>
+            </el-form-item>
+
+            <el-form-item label="起送价格" prop="image">
+              <el-input size="medium" v-model="form.start_delivery_price" placeholder="请填写起送价格"></el-input>
+            </el-form-item>
+
+            <el-form-item label="配送费" prop="image">
+              <el-input size="medium" v-model="form.delivery_price" placeholder="请填写配送费"></el-input>
             </el-form-item>
 
             <el-form-item class="submit">
@@ -37,39 +67,77 @@
 </template>
 
 <script>
-import book from '@/model/book'
+import merchant from '@/model/merchant'
+import UploadImgs from '@/component/base/upload-image'
 
 export default {
+  components: {
+    UploadImgs,
+  },
   data() {
     return {
-      form: {
-        title: '',
-        author: '',
-        summary: '',
-        image: '',
+      file_rules: {
+        minWidth: 100,
+        minHeight: 100,
+        maxSize: 5,
       },
+      form: {
+        market_id: '请选择',
+        merchant_name: '',
+        merchant_photo: '',
+        merchant_score: 4.5,
+        start_delivery_price: 20,
+        delivery_price: 2,
+      },
+      marketList: [{"id":"0", "market_name": "请选择"},{"id":"1", "market_name": "68"}],
       loading: false,
+      fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
     }
   },
   methods: {
     async submitForm(formName) {
+      const fileList = await this.$refs.upload_photo.getValue();
+      fileList.map((item) => {
+        this.form.merchant_photo = item.display;
+        return item;
+      });
       try {
         this.loading = true
-        const res = await book.createBook(this.form)
+        const res = await merchant.createMerchant(this.form)
         this.loading = false
-        if (res.code < window.MAX_SUCCESS_CODE) {
-          this.$message.success(`${res.message}`)
-          this.resetForm(formName)
+        if (res.status == window.SUCCESS_STATUS) {
+          this.$message.success(`${res.msg}`);
+          this.resetForm(formName);
+        }else {
+          this.loading = false;
+          this.$message.error(res.msg);
         }
       } catch (error) {
         this.loading = false
-        this.$message.error('图书添加失败，请检测填写信息')
+        this.$message.error('请求失败')
         console.log(error)
       }
     },
     // 重置表单
     resetForm(formName) {
       this.$refs[formName].resetFields()
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePreview(file) {
+      console.log(file);
+    },
+    handleAvatarSuccess(res, file, fileList) {
+      this.form.merchant_photo = file.response[0].url;
+      console.log(this.form.merchant_photo);
+    },
+
+    async getValue(name) {
+      console.log(await this.$refs[name].getValue())
+      const imgObj = await this.$refs[name].getValue();
+      // eslint-disable-next-line
+      alert('已获取数据, 打印在控制台中')
     },
   },
 }
