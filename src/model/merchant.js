@@ -32,11 +32,12 @@ class Merchant {
     return res
   }
 
-  async getMerchantList() {
+  async getMerchantList(data) {
     return _axios({
       method: 'get',
       url: 'v1/merchant/lists',
       Merchant: true,
+      params : data
     })
   }
 }
