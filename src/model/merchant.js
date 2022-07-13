@@ -42,4 +42,12 @@ class Merchant {
   }
 }
 
+export function getMerchantList(data){
+  return _axios({
+    url: 'v1/merchant/lists',
+    method: 'get',
+    data,
+  })
+}
+
 export default new Merchant()
