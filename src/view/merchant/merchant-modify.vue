@@ -92,8 +92,11 @@
         },
         marketList: [{"id":"0", "market_name": "请选择"},{"id":"1", "market_name": "68"}],
         loading: false,
-        fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
+        fileList: []
       }
+    },
+    created() {
+      this.getInfo();
     },
     methods: {
       async submitForm(formName) {
@@ -140,13 +143,25 @@
         // eslint-disable-next-line
         alert('已获取数据, 打印在控制台中')
       },
-
+      // async getMarketData() {
+      //   try {
+      //     const result = await getMarketData();
+      //     if (result.data && result.data.length > 0) {
+      //       this.marketList = result.data;
+      //
+      //       this.getInfo();
+      //     }
+      //   } catch (err) {
+      //     console.log(err);
+      //   }
+      // },
       // 获取信息
       async getInfo() {
         try {
           const result = await merchant.getMerchant(this.$route.query.id);
           if (result.code == 200) {
             this.form = result.data;
+            this.fileList = [{'name': '', 'url': result.data.merchant_photo}]
           }
         } catch (e) {
           console.log(e);
