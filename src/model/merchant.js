@@ -40,6 +40,11 @@ class Merchant {
       params : data
     })
   }
+
+  async setStatus(merchatId, status) {
+    const res = await get(`v1/merchant/setStatus?merchant_id=${id}&status=${status}`)
+    return res
+  }
 }
 
 export function getMerchantList(data){

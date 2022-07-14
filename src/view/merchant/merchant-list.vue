@@ -13,7 +13,7 @@
 
             <el-form-item>
               <el-button type="primary" @click="onSubmit">搜索</el-button>
-              <el-button type="primary" @click="AddBookRepeat()">添加书籍排重</el-button>
+              <el-button type="primary" @click="AddMerchant()">添加商户</el-button>
             </el-form-item>
           </el-form>
 
@@ -33,10 +33,20 @@
           <el-table-column prop="status" label="状态"> </el-table-column>
           <el-table-column prop="create_time" label="创建时间"> </el-table-column>
           <el-table-column prop="update_time" label="更新时间"></el-table-column>
-
+          <el-table-column prop="event_status" label="	状态" width="100">
+            <template slot-scope="scope">
+              <div class="table_btns">
+                <el-select v-if="scope.row.status ==1 || scope.row.status==0" size="mini" v-model="scope.row.status" @change="changeSwitch(scope.row)" :class="{vail_selcet:scope.row.status==1}">
+                  <el-option label="有效" :value="1"></el-option>
+                  <el-option label="删除" :value="0"></el-option>
+                </el-select>
+                <div v-else>未知</div>
+              </div>
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="130">
             <template slot-scope="scope">
-              <el-button @click="doRepeatChapter(scope.row.merchant_id)" type="text" size="small">编辑</el-button>
+              <el-button @click="editMerchant(scope.row.merchant_id)" type="text" size="small">编辑</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -70,7 +80,7 @@ export default {
   },
   created() {
     this.loading = true
-    this.duplicateBookTableData()
+    this.merchantListTableData()
   },
   mounted() {
 
@@ -78,57 +88,74 @@ export default {
   methods: {
     handleSizeChange(limit){
       this.pageCount = limit;
-      this.duplicateBookTableData()
+      this.merchantListTableData()
 
     },
     handleCurrentChange(page){
       this.currentPage = page;
-      this.duplicateBookTableData()
+      this.merchantListTableData()
     },
     onSubmit() {
       this.currentPage = 1;
-      this.duplicateBookTableData()
+      this.merchantListTableData()
     },
-    AddBookRepeat() {
-      this.$router.push({path: "/merchant/merchant-list"})
+    AddMerchant() {
+      this.$router.push({path: "/merchant/merchant-create"})
     },
-    doRepeatChapter(id){
-      this.$router.push({path: "/merchant/merchant-modify",query: {merchat_id: id}})
+    editMerchant(id){
+      this.$router.push({path: "/merchant/merchant-modify",query: {id: id}})
     },
-    duplicateBookTableData(){
-        let market_id = this.form.market_id
-        let limit = this.pageCount //每页10条数据
-        let page = this.currentPage //默认获取第一页的数据
-        this.loading = true
+    async merchantListTableData(){
+      let market_id = this.form.market_id
+      let limit = this.pageCount //每页10条数据
+      let page = this.currentPage //默认获取第一页的数据
+      this.loading = true
 
-      // let res
-      // try {
-      //
-      //   res = await merchant.getMerchantList({market_id:market_id,page_size:limit,page:page}) // eslint-disable-line
-      //   this.loading = false
-      //   if (res.status == window.SUCCESS_STATUS) {
-      //     this.listData = res.data.data
-      //     this.currentPage = res.data.current_page
-      //     this.pageCount = res.data.per_page
-      //     this.total_nums = res.result.total
-      //   }else {
-      //     this.$message.error(res.msg);
-      //   }
-      // } catch (e) {
-      //   this.loading = false
-      //   console.log(e)
-      // }
-
-
-      getMerchantList({market_id:market_id,page_size:limit,page:page}).then(res => {
+      try {
+        let res = await merchant.getMerchantList({market_id:market_id,page_size:limit,page:page}) // eslint-disable-line
+        this.loading = false
         if (res.status == window.SUCCESS_STATUS) {
           this.listData = res.data.data
           this.currentPage = res.data.current_page
           this.pageCount = res.data.per_page
-          this.total_nums = res.data.total
+          this.total_nums = res.result.total
+        }else {
+          this.$message.error(res.msg);
         }
+      } catch (e) {
         this.loading = false
-      })
+        console.log(e)
+      }
+
+
+      // getMerchantList({market_id:market_id,page_size:limit,page:page}).then(res => {
+      //   if (res.status == window.SUCCESS_STATUS) {
+      //     this.listData = res.data.data
+      //     this.currentPage = res.data.current_page
+      //     this.pageCount = res.data.per_page
+      //     this.total_nums = res.data.total
+      //   }
+      //   this.loading = false
+      // })
+    },
+    changeSwitch(item) {
+      let changeType = item.status == 1 ? '启用' : '删除';
+      this.$confirm("您确认"+changeType+"吗？", "确认信息", {
+        distinguishCancelAndClose: true,
+        confirmButtonText: "确认",
+        cancelButtonText: "取消",
+      }).then(async () => {
+        this.setStatus(item.merchant_id, item.status)
+      });
+    },
+    async setStatus(merchatId, status) {
+      let res = await merchant.setStatus(merchatId, status)
+      if (res.status == 200) {
+        this.merchantListTableData()
+        this.$message.success(res.msg)
+      } else {
+        this.$message.success(res.msg)
+      }
     }
   }
 }
