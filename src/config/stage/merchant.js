@@ -26,6 +26,15 @@ const merchantRouter = {
       inNav: true,
       icon: 'iconfont icon-tushuguanli',
     },
+    {
+      title: '编辑商户',
+      type: 'view',
+      name: 'merchant',
+      route: '/merchant/edit',
+      filePath: 'view/merchant/merchant-modify.vue',
+      inNav: true,
+      icon: 'iconfont icon-tushuguanli',
+    },
   ],
 }
 

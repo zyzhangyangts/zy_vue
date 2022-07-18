@@ -39,7 +39,7 @@
             </el-form-item>
 
             <el-form-item label="普通示例">
-              <upload-imgs ref="upload_photo" :rules="file_rules" :max-num="1" :multiple="false" />
+              <upload-imgs ref="upload_photo" :rules="file_rules" :max-num="1" :multiple="false" :value="initData" />
               <div><el-button @click="getValue('upload_photo')">获取当前图像数据</el-button></div>
             </el-form-item>
 
@@ -92,7 +92,8 @@
         },
         marketList: [{"id":"0", "market_name": "请选择"},{"id":"1", "market_name": "68"}],
         loading: false,
-        fileList: []
+        fileList: [],
+        initData: []
       }
     },
     created() {
@@ -100,14 +101,14 @@
     },
     methods: {
       async submitForm(formName) {
-        const fileList = await this.$refs.upload_photo.getValue();
-        fileList.map((item) => {
-          this.form.merchant_photo = item.display;
-          return item;
-        });
+        // const fileList = await this.$refs.upload_photo.getValue();
+        // fileList.map((item) => {
+        //   this.form.merchant_photo = item.display;
+        //   return item;
+        // });
         try {
           this.loading = true
-          const res = await merchant.editMerchant(this.$route.query.id, this.form)
+          const res = await merchant.editMerchant(this.form)
           this.loading = false
           if (res.status == window.SUCCESS_STATUS) {
             this.$message.success(`${res.msg}`);
@@ -159,9 +160,10 @@
       async getInfo() {
         try {
           const result = await merchant.getMerchant(this.$route.query.id);
-          if (result.code == 200) {
+          if (result.status == 200) {
             this.form = result.data;
             this.fileList = [{'name': '', 'url': result.data.merchant_photo}]
+            this.initData = [{'id': 0, 'display': result.data.merchant_photo , 'src' : result.data.merchant_photo, 'imgId': '123'}]
           }
         } catch (e) {
           console.log(e);

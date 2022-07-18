@@ -61,7 +61,7 @@
 
 
 <script>
-import {getMerchantList} from '@/model/merchant'
+import merchant from '@/model/merchant'
 export default {
   name: "merchant",
   data() {
@@ -100,10 +100,10 @@ export default {
       this.merchantListTableData()
     },
     AddMerchant() {
-      this.$router.push({path: "/merchant/merchant-create"})
+      this.$router.push({path: "/merchant/add"})
     },
     editMerchant(id){
-      this.$router.push({path: "/merchant/merchant-modify",query: {id: id}})
+      this.$router.push({path: "/merchant/edit",query: {id: id}})
     },
     async merchantListTableData(){
       let market_id = this.form.market_id
@@ -118,7 +118,7 @@ export default {
           this.listData = res.data.data
           this.currentPage = res.data.current_page
           this.pageCount = res.data.per_page
-          this.total_nums = res.result.total
+          this.total_nums = res.data.total
         }else {
           this.$message.error(res.msg);
         }

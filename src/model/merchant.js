@@ -22,9 +22,12 @@ class Merchant {
     return res
   }
 
-  async editMerchant(id, info) {
-    const res = await put(`v1/merchant/edit?merchant_id=${id}`, info)
-    return res
+  async editMerchant(data) {
+    return _axios({
+      method: 'post',
+      url: 'v1/merchant/edit',
+      data,
+    })
   }
 
   async deleteMerchant(id) {
@@ -42,7 +45,7 @@ class Merchant {
   }
 
   async setStatus(merchatId, status) {
-    const res = await get(`v1/merchant/setStatus?merchant_id=${id}&status=${status}`)
+    const res = await get(`v1/merchant/setStatus?merchant_id=${merchatId}&status=${status}`)
     return res
   }
 }
