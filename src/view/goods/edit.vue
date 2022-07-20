@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="title">添加商户</div>
+    <div class="title">编辑商户</div>
     <div class="wrap">
       <el-row>
         <el-col :lg="16" :md="20" :sm="24" :xs="24">
@@ -39,7 +39,7 @@
             </el-form-item>
 
             <el-form-item label="普通示例">
-              <upload-imgs ref="upload_photo" :rules="file_rules" :max-num="1" :multiple="false" />
+              <upload-imgs ref="upload_photo" :rules="file_rules" :max-num="1" :multiple="false" :value="initData" />
               <div><el-button @click="getValue('upload_photo')">获取当前图像数据</el-button></div>
             </el-form-item>
 
@@ -68,8 +68,8 @@
 
 <script>
 import merchant from '@/model/merchant'
-import market from '@/model/market'
 import UploadImgs from '@/component/base/upload-image'
+import market from '@/model/market'
 
 export default {
   components: {
@@ -83,7 +83,8 @@ export default {
         maxSize: 5,
       },
       form: {
-        market_id: 0,
+        merchant_id: 0,
+        market_id: '请选择',
         merchant_name: '',
         merchant_photo: '',
         merchant_score: 4.5,
@@ -92,11 +93,13 @@ export default {
       },
       marketList: [{"id":0, "market_name": "请选择"}],
       loading: false,
-      fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
+      fileList: [],
+      initData: []
     }
   },
   created() {
-    this.getMarketList()
+    this.getMarketList();
+    this.getInfo();
   },
   methods: {
     async getMarketList(){
@@ -116,14 +119,14 @@ export default {
       }
     },
     async submitForm(formName) {
-      const fileList = await this.$refs.upload_photo.getValue();
-      fileList.map((item) => {
-        this.form.merchant_photo = item.display;
-        return item;
-      });
+      // const fileList = await this.$refs.upload_photo.getValue();
+      // fileList.map((item) => {
+      //   this.form.merchant_photo = item.display;
+      //   return item;
+      // });
       try {
         this.loading = true
-        const res = await merchant.createMerchant(this.form)
+        const res = await merchant.editMerchant(this.form)
         this.loading = false
         if (res.status == window.SUCCESS_STATUS) {
           this.$message.success(`${res.msg}`);
@@ -159,6 +162,31 @@ export default {
       // eslint-disable-next-line
       alert('已获取数据, 打印在控制台中')
     },
+    // async getMarketData() {
+    //   try {
+    //     const result = await getMarketData();
+    //     if (result.data && result.data.length > 0) {
+    //       this.marketList = result.data;
+    //
+    //       this.getInfo();
+    //     }
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // },
+    // 获取信息
+    async getInfo() {
+      try {
+        const result = await merchant.getMerchant(this.$route.query.id);
+        if (result.status == 200) {
+          this.form = result.data;
+          this.fileList = [{'name': '', 'url': result.data.merchant_photo}]
+          this.initData = [{'id': 0, 'display': result.data.merchant_photo , 'src' : result.data.merchant_photo, 'imgId': '123'}]
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
   },
 }
 </script>

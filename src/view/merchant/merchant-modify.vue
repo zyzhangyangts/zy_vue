@@ -69,6 +69,7 @@
 <script>
   import merchant from '@/model/merchant'
   import UploadImgs from '@/component/base/upload-image'
+  import market from '@/model/market'
 
   export default {
     components: {
@@ -90,16 +91,33 @@
           start_delivery_price: 20,
           delivery_price: 2,
         },
-        marketList: [{"id":"0", "market_name": "请选择"},{"id":"1", "market_name": "68"}],
+        marketList: [{"id":0, "market_name": "请选择"}],
         loading: false,
         fileList: [],
         initData: []
       }
     },
     created() {
+      this.getMarketList();
       this.getInfo();
     },
     methods: {
+      async getMarketList(){
+        this.loading = true
+
+        try {
+          let res = await market.lists({page_size:10000,page:1}) // eslint-disable-line
+          this.loading = false
+          if (res.status == window.SUCCESS_STATUS) {
+            this.marketList = this.marketList.concat(res.data.data)
+          }else {
+            this.$message.error(res.msg)
+          }
+        } catch (e) {
+          this.loading = false
+          console.log(e)
+        }
+      },
       async submitForm(formName) {
         // const fileList = await this.$refs.upload_photo.getValue();
         // fileList.map((item) => {
