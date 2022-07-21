@@ -15,9 +15,9 @@
               >
                 <el-option
                   v-for="item in marketList"
-                  :key="item.id"
+                  :key="item.market_id"
                   :label="item.market_name"
-                  :value="item.id"
+                  :value="item.market_id"
                 ></el-option>
               </el-select>
             </el-form-item>
@@ -90,7 +90,7 @@ export default {
         start_delivery_price: 20,
         delivery_price: 2,
       },
-      marketList: [{"id":0, "market_name": "请选择"}],
+      marketList: [{"market_id":0, "market_name": "请选择"}],
       loading: false,
       fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
     }
@@ -103,7 +103,7 @@ export default {
       this.loading = true
 
       try {
-        let res = await market.lists({page_size:10000,page:1}) // eslint-disable-line
+        let res = await market.lists({page_size:10000,page:1, status:1}) // eslint-disable-line
         this.loading = false
         if (res.status == window.SUCCESS_STATUS) {
           this.marketList = this.marketList.concat(res.data.data)

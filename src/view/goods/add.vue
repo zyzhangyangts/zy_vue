@@ -12,34 +12,39 @@
                 filterable
                 placeholder="请填写商圈"
                 clearable
+                @change="changeMarket"
               >
                 <el-option
                   v-for="item in marketList"
-                  :key="item.id"
+                  :key="item.market_id"
                   :label="item.market_name"
-                  :value="item.id"
+                  :value="item.market_id"
                 ></el-option>
               </el-select>
             </el-form-item>
+
+            <el-form-item label="商户" prop="title">
+              <el-select
+                v-model="form.merchant_id"
+                label="请选择商户"
+                filterable
+                placeholder="请选择商户"
+              >
+                <el-option
+                  v-for="item in merchantList"
+                  :key="item.merchant_id"
+                  :label="item.merchant_name"
+                  :value="item.merchant_id"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+
             <el-form-item label="商户名称" prop="author">
               <el-input size="medium" v-model="form.merchant_name" placeholder="请填写商户名称"></el-input>
             </el-form-item>
-            <el-form-item label="封面" prop="image">
-              <el-upload
-                class="upload-demo"
-                action="http://api.admin.zy.com/cms/file"
-                :on-preview="handlePreview"
-                :on-remove="handleRemove"
-                :on-success="handleAvatarSuccess"
-                :file-list="fileList"
-                list-type="picture">
-                <el-button size="small" type="primary">点击上传</el-button>
-                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-              </el-upload>
-            </el-form-item>
 
-            <el-form-item label="普通示例">
-              <upload-imgs ref="upload_photo" :rules="file_rules" :max-num="1" :multiple="false" />
+            <el-form-item label="商品图片">
+              <upload-imgs ref="upload_photo" :rules="file_rules" :max-num="4" :multiple="false" />
               <div><el-button @click="getValue('upload_photo')">获取当前图像数据</el-button></div>
             </el-form-item>
 
@@ -68,6 +73,7 @@
 
 <script>
 import merchant from '@/model/merchant'
+import goodsClass from '@/model/GoodsClass'
 import market from '@/model/market'
 import UploadImgs from '@/component/base/upload-image'
 
@@ -90,7 +96,9 @@ export default {
         start_delivery_price: 20,
         delivery_price: 2,
       },
-      marketList: [{"id":0, "market_name": "请选择"}],
+      marketList: [{"market_id":0, "market_name": "请选择商圈"}],
+      merchantList: [{"merchant_id":0, "merchant_name": "请选择商户"}],
+      goodsClassList: [{"merchant_id":0, "merchant_name": "请选择商户"}],
       loading: false,
       fileList: [{name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}]
     }
@@ -103,7 +111,7 @@ export default {
       this.loading = true
 
       try {
-        let res = await market.lists({page_size:10000,page:1}) // eslint-disable-line
+        let res = await market.lists({page_size:10000,page:1, status:1}) // eslint-disable-line
         this.loading = false
         if (res.status == window.SUCCESS_STATUS) {
           this.marketList = this.marketList.concat(res.data.data)
@@ -114,6 +122,44 @@ export default {
         this.loading = false
         console.log(e)
       }
+    },
+    async getGoodsClassList(){
+      this.loading = true
+
+      try {
+        let res = await goodsClass.lists({parent_id:0, page_size:10000,page:1, status:1}) // eslint-disable-line
+        this.loading = false
+        if (res.status == window.SUCCESS_STATUS) {
+          this.marketList = this.marketList.concat(res.data.data)
+        }else {
+          this.$message.error(res.msg)
+        }
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
+    },
+    async getMerchantList(){
+      if(this.form.market_id <= 0) {
+        return true;
+      }
+      this.loading = true
+
+      try {
+        let res = await merchant.getMerchantList({market_id:this.form.market_id,page_size:100000,page:1, status:1}) // eslint-disable-line
+        this.loading = false
+        if (res.status == window.SUCCESS_STATUS) {
+          this.merchantList = this.merchantList.concat(res.data.data)
+        }else {
+          this.$message.error(res.msg)
+        }
+      } catch (e) {
+        this.loading = false
+        console.log(e)
+      }
+    },
+    async changeMarket() {
+      await this.getMerchantList()
     },
     async submitForm(formName) {
       const fileList = await this.$refs.upload_photo.getValue();
